@@ -1,0 +1,14 @@
+[Desktop Entry]
+Name=switcher
+Comment=switcher runner
+Icon=
+
+X-KDE-ServiceTypes=Plasma/Runner
+Type=Service
+X-KDE-Library=krunner_switcher
+X-KDE-PluginInfo-Author=Tatu Lahtela
+X-KDE-PluginInfo-Email=lahtela@iki.fi
+X-KDE-PluginInfo-Name=switcher
+X-KDE-PluginInfo-Version=0.1
+X-KDE-PluginInfo-License=LGPL 2.1+
+X-KDE-PluginInfo-EnabledByDefault=true
