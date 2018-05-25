@@ -1,25 +1,4 @@
-Runner Template
+Switcher 
 ----------------------
 
--- Build instructions --
-
-cd /where/your/runner/is/installed
-mkdir build
-cd build
-cmake -DCMAKE_INSTALL_PREFIX=MYPREFIX .. 
-make 
-make install
-
-(MYPREFIX is where you install your Plasma setup, replace it accordingly)
-
-Restart krunner to load the runner
-(in a terminal type: 
-kquitapp krunner 
-and then
-krunner)
-
-After this you should see your runner in the system settings:
-
-systemsettings5 (Head to "Search")
-
-You can also launch KRunner via Alt-F2 and you will find your runner.
+Switcher is a KRunner addon, that allows fast-switching of windows by typing a dot and the application name or title, e.g. ".emacs"

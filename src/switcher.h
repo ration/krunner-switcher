@@ -20,17 +20,48 @@
 
 #include <KRunner/AbstractRunner>
 
-class switcher : public Plasma::AbstractRunner
+class KWindowInfo;
+
+
+class Switcher : public Plasma::AbstractRunner
 {
     Q_OBJECT
 
 public:
-    switcher(QObject *parent, const QVariantList &args);
-    ~switcher() override;
+    Switcher(QObject* parent, const QVariantList &args);
+    ~Switcher() override;
 
-public: // Plasma::AbstractRunner API
-    void match(Plasma::RunnerContext &context) override;
-    void run(const Plasma::RunnerContext &context, const Plasma::QueryMatch &match) override;
+    void match(Plasma::RunnerContext& context) override;
+    void run(const Plasma::RunnerContext& context, const Plasma::QueryMatch& match) override;
+
+private Q_SLOTS:
+            void prepareForMatchSession();
+    void matchSessionComplete();
+    void gatherInfo();
+
+private:
+    enum WindowAction {
+        ActivateAction,
+        CloseAction,
+        MinimizeAction,
+        MaximizeAction,
+        FullscreenAction,
+        ShadeAction,
+        KeepAboveAction,
+        KeepBelowAction
+    };
+    Plasma::QueryMatch desktopMatch(int desktop, qreal relevance = 1.0);
+    Plasma::QueryMatch windowMatch(const KWindowInfo& info, WindowAction action, qreal relevance = 1.0,
+                                   Plasma::QueryMatch::Type type = Plasma::QueryMatch::ExactMatch);
+    bool actionSupported(const KWindowInfo& info, WindowAction action);
+
+    QHash<WId, KWindowInfo> m_windows; // protected by m_mutex
+    QHash<WId, QIcon> m_icons; // protected by m_mutex
+    QStringList m_desktopNames; // protected by m_mutex
+    QMutex m_mutex;
+
+    bool m_inSession : 1; // only used in the main thread
+    bool m_ready : 1; // protected by m_mutex
 };
 
 #endif
