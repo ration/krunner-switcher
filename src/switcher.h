@@ -40,20 +40,8 @@ private Q_SLOTS:
     void gatherInfo();
 
 private:
-    enum WindowAction {
-        ActivateAction,
-        CloseAction,
-        MinimizeAction,
-        MaximizeAction,
-        FullscreenAction,
-        ShadeAction,
-        KeepAboveAction,
-        KeepBelowAction
-    };
-    Plasma::QueryMatch desktopMatch(int desktop, qreal relevance = 1.0);
-    Plasma::QueryMatch windowMatch(const KWindowInfo& info, WindowAction action, qreal relevance = 1.0,
+    Plasma::QueryMatch windowMatch(const KWindowInfo& info, qreal relevance = 1.0,
                                    Plasma::QueryMatch::Type type = Plasma::QueryMatch::ExactMatch);
-    bool actionSupported(const KWindowInfo& info, WindowAction action);
 
     QHash<WId, KWindowInfo> m_windows; // protected by m_mutex
     QHash<WId, QIcon> m_icons; // protected by m_mutex
