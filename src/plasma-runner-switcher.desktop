@@ -1,6 +1,6 @@
 [Desktop Entry]
 Name=switcher
-Comment=switcher runner
+Comment=Switcher is an app switching plugin. Type part of the application name/title preceded with a dot, e.g. ".emacs" to switch between apps.
 Icon=
 
 X-KDE-ServiceTypes=Plasma/Runner
