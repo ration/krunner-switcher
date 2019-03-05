@@ -26,6 +26,7 @@
 #include <QIcon>
 #include <KWindowSystem>
 #include <KLocalizedString>
+#include <QCursor>
 
 
 #ifdef HAVE_X11
@@ -174,6 +175,9 @@ void Switcher::run(const Plasma::RunnerContext &context, const Plasma::QueryMatc
     KWindowInfo info = i.value();
 
     KWindowSystem::forceActiveWindow(w);
+    QCursor c = QCursor();
+    KWindowInfo focusWindow(w, NET::WMGeometry);
+    c.setPos(focusWindow.geometry().center());
 }
 
 
