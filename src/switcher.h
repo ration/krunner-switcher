@@ -19,6 +19,7 @@
 #define SWITCHER_H
 
 #include <KRunner/AbstractRunner>
+#include <QMutex>
 
 class KWindowInfo;
 
