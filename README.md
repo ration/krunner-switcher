@@ -13,3 +13,15 @@ sudo make install
 kquitapp krunner
 krunner&
 ```
+
+For kde5
+```
+mkdir build
+cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=`kf5-config --prefix`
+make
+sudo make install
+kquitapp krunner
+krunner&
+```
+
