@@ -68,10 +68,11 @@ void Switcher::gatherInfo() {
   m_desktopNames.clear();
   m_icons.clear();
   m_windows.clear();
-    
+  /*
   if (!m_inSession) {
     return;
   }
+  */
   foreach (const WId w, KWindowSystem::windows()) {
     KWindowInfo info(w, NET::WMWindowType | NET::WMDesktop |
 		     NET::WMState | NET::XAWMState |
@@ -124,11 +125,11 @@ void Switcher::matchSessionComplete() {
 // Called in the secondary thread
 void Switcher::match(Plasma::RunnerContext &context) {
   QMutexLocker locker(&m_mutex);
-    
+  /*
   if (!m_ready) {
     return;
   }
-
+  */
   QString term = context.query();
 
   QList<Plasma::QueryMatch> matches;

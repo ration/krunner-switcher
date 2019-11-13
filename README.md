@@ -24,4 +24,3 @@ sudo make install
 kquitapp krunner
 krunner&
 ```
-
