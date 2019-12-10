@@ -19,38 +19,37 @@
 #define SWITCHER_H
 
 #include <KRunner/AbstractRunner>
-#include <QMutex>
 
 class KWindowInfo;
 
 
-class Switcher : public Plasma::AbstractRunner
-{
-    Q_OBJECT
+class Switcher : public Plasma::AbstractRunner {
+Q_OBJECT
 
 public:
-    Switcher(QObject* parent, const QVariantList &args);
+    Switcher(QObject *parent, const QVariantList &args);
+
     ~Switcher() override;
 
-    void match(Plasma::RunnerContext& context) override;
-    void run(const Plasma::RunnerContext& context, const Plasma::QueryMatch& match) override;
+    void match(Plasma::RunnerContext &context) override;
+
+    void run(const Plasma::RunnerContext &context, const Plasma::QueryMatch &match) override;
 
 private Q_SLOTS:
-            void prepareForMatchSession();
+
+    void prepareForMatchSession();
+
     void matchSessionComplete();
+
     void gatherInfo();
 
 private:
-    Plasma::QueryMatch windowMatch(const KWindowInfo& info, qreal relevance = 1.0,
+    Plasma::QueryMatch windowMatch(const KWindowInfo &info, qreal relevance = 1.0,
                                    Plasma::QueryMatch::Type type = Plasma::QueryMatch::ExactMatch);
 
-    QHash<WId, KWindowInfo> m_windows; // protected by m_mutex
-    QHash<WId, QIcon> m_icons; // protected by m_mutex
-    QStringList m_desktopNames; // protected by m_mutex
-    QMutex m_mutex;
-
-    bool m_inSession : 1; // only used in the main thread
-    bool m_ready : 1; // protected by m_mutex
+    QHash<WId, KWindowInfo> m_windows;
+    QHash<WId, QIcon> m_icons;
+    QStringList m_desktopNames;
 };
 
 #endif
