@@ -21,13 +21,11 @@
 #include "config-switcher.h"
 
 #include <QTimer>
-
 #include <QDebug>
 #include <QIcon>
 #include <KWindowSystem>
 #include <KLocalizedString>
 #include <QCursor>
-
 
 #ifdef HAVE_X11
 
@@ -36,15 +34,10 @@
 
 #endif
 
-#include<QtDebug>
-#include <QtCore/QDebug>
-
 K_EXPORT_PLASMA_RUNNER(windows, Switcher)
 
 Switcher::Switcher(QObject *parent, const QVariantList &args)
-        : AbstractRunner(parent, args),
-          m_inSession(false),
-          m_ready(false) {
+        : AbstractRunner(parent, args) {
     Q_UNUSED(args);
     setObjectName(QLatin1String("Switcher"));
 
@@ -56,57 +49,44 @@ Switcher::Switcher(QObject *parent, const QVariantList &args)
     connect(this, &Plasma::AbstractRunner::teardown, this, &Switcher::matchSessionComplete);
 }
 
-Switcher::~Switcher() {
-}
+Switcher::~Switcher() = default;
 
 // Called in the main thread
 void Switcher::gatherInfo() {
-    QMutexLocker locker(&m_mutex);
-    if (!m_inSession) {
-        return;
-    }
+    for (const WId &w: KWindowSystem::windows()) {
+        KWindowInfo info(w, NET::WMWindowType | NET::WMDesktop |
+                            NET::WMState | NET::XAWMState |
+                            NET::WMName,
+                         NET::WM2WindowClass | NET::WM2WindowRole | NET::WM2AllowedActions);
+        if (info.valid() && info.name() != "KRunner — krunner") {
+            // ignore NET::Tool and other special window types
+            NET::WindowType wType = info.windowType(NET::NormalMask | NET::DesktopMask | NET::DockMask |
+                                                    NET::ToolbarMask | NET::MenuMask | NET::DialogMask |
+                                                    NET::OverrideMask | NET::TopMenuMask |
+                                                    NET::UtilityMask | NET::SplashMask);
 
-            foreach (const WId w, KWindowSystem::windows()) {
-            KWindowInfo info(w, NET::WMWindowType | NET::WMDesktop |
-                                NET::WMState | NET::XAWMState |
-                                NET::WMName,
-                             NET::WM2WindowClass | NET::WM2WindowRole | NET::WM2AllowedActions);
-            if (info.valid()) {
-                // ignore NET::Tool and other special window types
-                NET::WindowType wType = info.windowType(NET::NormalMask | NET::DesktopMask | NET::DockMask |
-                                                        NET::ToolbarMask | NET::MenuMask | NET::DialogMask |
-                                                        NET::OverrideMask | NET::TopMenuMask |
-                                                        NET::UtilityMask | NET::SplashMask);
-
-                if (wType != NET::Normal && wType != NET::Override && wType != NET::Unknown &&
-                    wType != NET::Dialog && wType != NET::Utility) {
-                    continue;
-                }
-                m_windows.insert(w, info);
-                m_icons.insert(w, QIcon(KWindowSystem::icon(w)));
+            if (wType != NET::Normal && wType != NET::Override && wType != NET::Unknown &&
+                wType != NET::Dialog && wType != NET::Utility) {
+                continue;
             }
+            m_windows.insert(w, info);
+            m_icons.insert(w, QIcon(KWindowSystem::icon(w)));
         }
-
-    for (int i = 1; i <= KWindowSystem::numberOfDesktops(); i++) {
-        m_desktopNames << KWindowSystem::desktopName(i);
     }
 
-    m_ready = true;
+    const int desktopCount = KWindowSystem::numberOfDesktops();
+    for (int i = 1; i <= desktopCount; ++i) {
+        m_desktopNames.append(KWindowSystem::desktopName(i));
+    }
 }
 
 // Called in the main thread
 void Switcher::prepareForMatchSession() {
-    QMutexLocker locker(&m_mutex);
-    m_inSession = true;
-    m_ready = false;
-    QTimer::singleShot(0, this, &Switcher::gatherInfo);
+    gatherInfo();
 }
 
 // Called in the main thread
 void Switcher::matchSessionComplete() {
-    QMutexLocker locker(&m_mutex);
-    m_inSession = false;
-    m_ready = false;
     m_desktopNames.clear();
     m_icons.clear();
     m_windows.clear();
@@ -114,54 +94,37 @@ void Switcher::matchSessionComplete() {
 
 // Called in the secondary thread
 void Switcher::match(Plasma::RunnerContext &context) {
-    QMutexLocker locker(&m_mutex);
-    if (!m_ready) {
-        return;
-    }
-
-    QString term = context.query();
+    const QString term = context.query();
+    if (!context.isValid() || !term.startsWith(i18nc("Note this is a KRunner keyword", "."), Qt::CaseInsensitive)) return;
 
     QList<Plasma::QueryMatch> matches;
 
     // keyword match: when term starts with "window" we list all windows
     // the list can be restricted to windows matching a given name, class, role or desktop
-    if (term.startsWith(i18nc("Note this is a KRunner keyword", "."), Qt::CaseInsensitive)) {
-        QString windowName = term.mid(1, term.size());
+    const QString windowName = term.mid(1, term.size());
 
-        QHashIterator<WId, KWindowInfo> it(m_windows);
-        while (it.hasNext()) {
-            it.next();
-            WId w = it.key();
-            KWindowInfo info = it.value();
-            QString windowClass = QString::fromUtf8(info.windowClassName());
+    QHashIterator<WId, KWindowInfo> it(m_windows);
+    while (it.hasNext()) {
+        it.next();
+        const WId w = it.key();
+        const KWindowInfo info = it.value();
+        const QString windowClass = QString::fromUtf8(info.windowClassName());
 
-            // exclude not matching windows
-            if (!KWindowSystem::hasWId(w)) {
-                continue;
-            }
-            if (!windowName.isEmpty() && !info.name().contains(windowName, Qt::CaseInsensitive) &&
-                !windowClass.contains(windowName, Qt::CaseInsensitive)) {
-                continue;
-            }
-            matches << windowMatch(info);
+        // exclude not matching windows
+        if (!KWindowSystem::hasWId(w)) continue;
+
+        if (!windowName.isEmpty() && !info.name().contains(windowName, Qt::CaseInsensitive) &&
+            !windowClass.contains(windowName, Qt::CaseInsensitive)) {
+            continue;
         }
-
-        if (!matches.isEmpty()) {
-            // the window keyword found matches - do not process other syntax possibilities
-            context.addMatches(matches);
-            return;
-        }
+        matches.append(windowMatch(info));
     }
 
-
-    if (!matches.isEmpty()) {
-        context.addMatches(matches);
-    }
+    context.addMatches(matches);
 }
 
 // Called in the main thread
 void Switcher::run(const Plasma::RunnerContext &context, const Plasma::QueryMatch &match) {
-    QMutexLocker locker(&m_mutex);
     Q_UNUSED(context)
     // check if it's a desktop
     if (match.id().startsWith(QLatin1String("windows_desktop"))) {
@@ -170,10 +133,6 @@ void Switcher::run(const Plasma::RunnerContext &context, const Plasma::QueryMatc
     }
 
     WId w(match.data().toString().toULong());
-    //this is needed since KWindowInfo() doesn't exist, m_windows[w] doesn't work
-    QHash<WId, KWindowInfo>::iterator i = m_windows.find(w);
-    KWindowInfo info = i.value();
-
     KWindowSystem::forceActiveWindow(w);
     QCursor c = QCursor();
     KWindowInfo focusWindow(w, NET::WMGeometry);
@@ -181,7 +140,7 @@ void Switcher::run(const Plasma::RunnerContext &context, const Plasma::QueryMatc
 }
 
 
-Plasma::QueryMatch Switcher::windowMatch(const KWindowInfo &info, qreal relevance, Plasma::QueryMatch::Type type) {
+Plasma::QueryMatch Switcher::windowMatch(const KWindowInfo &info, qreal relevance, const Plasma::QueryMatch::Type type) {
     Plasma::QueryMatch match(this);
     match.setType(type);
     match.setData(QString::number(info.win()));
