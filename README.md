@@ -6,7 +6,7 @@ Switcher is a KRunner addon, that allows fast-switching of windows by typing a d
 ### Required Dependencies
 
 Debian/Ubuntu:  
-`sudo apt install cmake extra-cmake-modules build-essential libkf5runner-dev libkf5textwidgets-dev qtdeclarative5-dev gettext libqt5x11extras5-dev`
+`sudo apt install cmake extra-cmake-modules build-essential libkf5runner-dev libkf5textwidgets-dev qtdeclarative5-dev gettext libqt5x11extras5-dev libxcb-randr0-dev`
 
 openSUSE:  
 `sudo zypper install cmake extra-cmake-modules libQt5Widgets5 libQt5Core5 libqt5-qtlocation-devel ki18n-devel
