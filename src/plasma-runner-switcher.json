@@ -1,0 +1,24 @@
+{
+    "KPlugin": {
+        "Authors": [
+            {
+                "Email": "lahtela@iki.fi",
+                "Name": "Tatu Lahtela"
+            },
+            {
+                "Email": "bjorn.kettunen@thaodan.de",
+                "Name": "Björn Kettunen"
+            }
+        ],
+        "Description": "Window Switcher is an app switching plugin. Type part of the application name/title preceded with a dot, e.g. \".emacs\" to switch between apps.",
+        "EnabledByDefault": true,
+        "X-Plasma-Runner-Unique-Results": true,
+        "Icon": "kde",
+        "License": "LGPL 2.1+",
+        "Name": "Windows",
+        "ServiceTypes": [
+            "Plasma/Runner"
+        ],
+        "Version": "0.1"
+    }
+}
